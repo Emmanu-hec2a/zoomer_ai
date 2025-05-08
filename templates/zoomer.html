@@ -45,6 +45,68 @@
             scroll-behavior: smooth;
         }
 
+        body.light-mode {
+        background: #ffffff;
+        color: #000000;
+        }
+
+        body.dark-mode {
+        background: #121212;
+        color: #ffffff;
+        }
+
+        .action-buttons {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .copy-btn,
+        .like-btn {
+        background-color: transparent;
+        border: none;
+        padding: 4px;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: background-color 0.2s ease;
+        }
+
+
+        .icon-copy,
+        .icon-like {
+            width: 16px;
+            height: 16px;
+            color: #333;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .like-btn.liked .icon-like {
+            color: #1976d2;
+            transform: scale(1.2);
+        }
+        .copy-btn:hover,
+        .like-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .copy-btn:active,
+        .like-btn:active {
+            transform: scale(0.95);
+        }
+
+        .copy-btn {
+            font-family: 'Segoe UI Symbol', sans-serif; /* ensures icon shows right */
+        }
+
+
+        #response-timestamp {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+
         .container {
             max-width: 1200px;
             padding: 20px;
@@ -103,7 +165,7 @@
 
         @media (min-width: 768px) {
             .main-content {
-                grid-template-columns: 2fr 1fr;
+                grid-template-columns: 1fr 2fr;
             }
         }
 
@@ -200,9 +262,9 @@
             margin-top: 16px;
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 768px) {
             .screenshots-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(1, 2fr);
             }
         }
 
@@ -419,24 +481,18 @@
         }
         
         .chat-input {
-            padding: 16px 0 0;
-            border-top: 1px solid var(--gray-200);
-            margin-top: 10px;
+            padding: 20px;
+            border-top: 1px solid #E5E7EB;
+            background-color: white;
+            border-radius: 0 0 12px 12px;
         }
         
         .input-area {
             display: flex;
             align-items: center;
-            background-color: var(--gray-100);
+            background-color: #F3F4F6;
             border-radius: 24px;
-            padding: 6px 8px 6px 16px;
-            border: 1px solid var(--gray-200);
-            transition: all 0.3s ease;
-        }
-        
-        .input-area:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+            padding: 8px 16px;
         }
         
         .input-area input {
@@ -446,11 +502,10 @@
             padding: 10px;
             font-size: 16px;
             outline: none;
-            font-family: 'Poppins', sans-serif;
         }
         
         .send-button {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            background-color: #4F46E5;
             color: white;
             border: none;
             border-radius: 50%;
@@ -460,15 +515,34 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s;
         }
         
         .send-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background-color: #4338CA;
         }
-        
+        /* 📱 Responsive styling for smaller screens */
+        @media screen and (max-width: 768px) {
+            .input {
+                padding: 6px;
+            }
+
+            .input textarea {
+                font-size: 15px;
+                padding-right: 42px;
+            }
+
+            .send-button {
+                width: 30px;
+                height: 30px;
+            }
+
+            .send-button svg {
+                width: 14px;
+                height: 14px;
+            }
+        }        
+
         .thinking {
             font-style: italic;
             color: var(--gray-600);
@@ -608,6 +682,7 @@
         <div class="nav-inner">
             <div class="nav-title">ZOOMER AI</div>
             <div class="nav-links">
+                <button id="toggle-mode">🌙 </button>
                 <a href="/feed"><i class="fas fa-home fa-lg"></i></a>
                 <a href="/profile"><i class="fas fa-user fa-lg"></i></a>
             </div>
@@ -739,8 +814,23 @@
                     </div>
                     <div class="message-content assistant-content">
                         <p>👋🏾 Hello there! I'm AfroZoomer — your chatty, friendly AI buddy here to guide you through Zoomer Africa. What can I help with today? 🚀</p>
+                        <small id="response-timestamp"></small>
+                        <div id="action-buttons">
+                            <button class="copy-btn" onclick="copyResponse(this)" type="Copy">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="icon-copy" viewBox="0 0 16 16">
+                                    <path d="M10 1H2a1 1 0 0 0-1 1v10h1V2a.5.5 0 0 1 .5-.5H10V1z"/>
+                                    <path d="M14 4a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4zm-1 0v10H5V4h8z"/>
+                                  </svg>
+                            </button>
+                          </div>
                     </div>
                 </div>
+                <!-- <div id="action-buttons">
+                    <button onclick="sendFeedback('up')">👍</button>
+                    <button onclick="sendFeedback('down')">👎</button>
+                    <<button onclick="askMore()">Ask more about this topic</button>
+                  </div> -->
+                  
             </div>
             
             <div class="chat-input">
@@ -767,6 +857,39 @@
             content.style.display = content.style.display === 'block' ? 'none' : 'block';
             arrow.classList.toggle('fa-chevron-down');
             arrow.classList.toggle('fa-chevron-up');
+        }
+
+        // const textarea = document.getElementById("userInput");
+
+        // textarea.addEventListener("input", () => {
+        //     textarea.style.height = "auto";
+        //     textarea.style.height = (textarea.scrollHeight) + "px";
+        // });
+
+
+        // Load preferred mode
+        const currentMode = localStorage.getItem("theme") || "light";
+        document.body.classList.add(currentMode + "-mode");
+
+        document.getElementById("toggle-mode").addEventListener("click", () => {
+            const isDark = document.body.classList.contains("dark-mode");
+            document.body.classList.toggle("dark-mode", !isDark);
+            document.body.classList.toggle("light-mode", isDark);
+            localStorage.setItem("theme", isDark ? "light" : "dark");
+        }); 
+        
+        function copyResponse(btn) {
+            const responseText = btn.closest('.assistant-message').textContent;
+            navigator.clipboard.writeText(responseText).then(() => {
+                btn.innerHTML = "✅";
+                setTimeout(() => {
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                    fill="currentColor" class="icon-copy" viewBox="0 0 16 16">
+                    <path d="M10 1H2a1 1 0 0 0-1 1v10h1V2a.5.5 0 0 1 .5-.5H10V1z"/>
+                    <path d="M14 4a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4zm-1 0v10H5V4h8z"/>
+                </svg>`;
+                }, 1500);
+            });
         }
 
         // AfroZoomer AI Assistant Script       
@@ -809,6 +932,10 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    // const now = new Date();
+                    // document.getElementById("assistant-message").textContent = data.response;
+                    // document.getElementById("response-timestamp").textContent = 
+                    //     `Answered on ${now.toLocaleDateString()} at ${now.toLocaleTimeString()}`;
                     // Remove thinking indicator
                     removeThinking(thinkingId);
                     

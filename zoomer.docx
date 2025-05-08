@@ -293,3 +293,5 @@ zoomer_africa_qa_approaches.extend([
     {
         "question": "How do I start creating an ad campaign on Zoomer Africa?",
         "answer": "On the Home page, click on the three lines in the upper left corner and scroll down to find the 'Ads manager' option
+    }
+)]

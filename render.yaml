@@ -1,11 +1,6 @@
 start: gunicorn app:app --workers=1
 
-services:
-  - type: web
-    # other configuration
-    env:
-      - key: PORT
-        value: 8000
+
 
 
   
