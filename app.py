@@ -8,10 +8,18 @@ import numpy as np
 import faiss
 import time
 import backoff  # You'll need to install this: pip install backoff
+import glob # Add this import
 
 app = Flask(__name__)
 
 load_dotenv()  # Load environment variables from .env file
+
+# Load all .docx files in the directory
+docs = glob.glob("*.docx")
+faq_chunks = []
+for doc in docs:
+    doc_file = Document(doc)
+    faq_chunks.extend([para.text.strip() for para in doc_file.paragraphs if para.text.strip()])
 
 # Initialize NetMind API
 client = OpenAI(
@@ -19,12 +27,8 @@ client = OpenAI(
     api_key=os.getenv("OPEN_API_KEY")
 )
 
-# ===== Load and Embed Zoomer Africa FAQ =====
-doc = Document("zoomer_faqs.docx")
-faq_chunks = [para.text.strip() for para in doc.paragraphs if para.text.strip()]
-
 # Add backoff decorator to handle rate limiting
-@backoff.on_exception(backoff.expo, 
+@backoff.on_exception(backoff.expo,
                      Exception,  # Catch all exceptions since we don't know exact NetMind error types
                      max_tries=5)
 def get_embedding(text):
@@ -44,18 +48,18 @@ class AfroZoomerAssistant:
     def __init__(self):
         self.name = "AfroZoomer"
         self.conversation_history = []
-        
+
         # Use a persistent cache for embeddings to avoid regenerating them
         self.embedding_cache_file = "embedding_cache.npy"
         self.chunks_cache_file = "chunks_cache.txt"
-        
+
         # Load or create index
         try:
             self.initialize_from_cache()
         except (FileNotFoundError, Exception) as e:
             print(f"Cache not found or error: {e}. Building new index...")
             self.initialize_new_index()
-    
+
     def initialize_from_cache(self):
         """Load pre-computed embeddings and chunks from cache"""
         # Load embeddings and rebuild index
@@ -63,30 +67,30 @@ class AfroZoomerAssistant:
         self.embedding_dim = saved_embeddings.shape[1]
         self.index = faiss.IndexFlatL2(self.embedding_dim)
         self.index.add(saved_embeddings.astype("float32"))
-        
+
         # Load cached chunks
         with open(self.chunks_cache_file, 'r', encoding='utf-8') as f:
             self.faq_chunks = [line.strip() for line in f.readlines()]
-        
+
         print(f"Loaded {len(self.faq_chunks)} FAQ chunks from cache")
-    
+
     def initialize_new_index(self):
         """Build a new index by computing embeddings for all chunks"""
-        self.faq_chunks = faq_chunks  # Use global faq_chunks
-        
+        self.faq_chunks = faq_chunks  # Use the globally loaded faq_chunks
+
         # Get dimension from sample
         sample_emb = get_embedding("sample")
         self.embedding_dim = len(sample_emb)
         self.index = faiss.IndexFlatL2(self.embedding_dim)
-        
+
         # Process chunks in small batches to avoid rate limits
         all_embeddings = []
         batch_size = 5  # Adjust based on API limits
-        
+
         for i in range(0, len(self.faq_chunks), batch_size):
             batch = self.faq_chunks[i:i+batch_size]
             print(f"Processing batch {i//batch_size + 1}/{(len(self.faq_chunks) + batch_size - 1)//batch_size}")
-            
+
             for chunk in batch:
                 try:
                     emb = get_embedding(chunk)
@@ -96,14 +100,14 @@ class AfroZoomerAssistant:
                     print(f"Error embedding chunk: {e}")
                     # Use a zero vector as fallback
                     all_embeddings.append([0] * self.embedding_dim)
-            
+
             # Sleep between batches to avoid hitting rate limits
             time.sleep(5)
-        
+
         # Convert to numpy array and add to index
         embeddings_np = np.array(all_embeddings).astype("float32")
         self.index.add(embeddings_np)
-        
+
         # Save to cache
         try:
             np.save(self.embedding_cache_file, embeddings_np)
