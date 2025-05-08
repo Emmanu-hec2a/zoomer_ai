@@ -58,7 +58,7 @@ class AfroZoomerAssistant:
         self.conversation_history = []
         self.embedding_dim = None
         self.index = None
-        self.data_chunks = self._load_all_data()  # Load data from both files
+        self.data_chunks = self._load_all_data()  # Load data from all docx files
 
         # Use a persistent cache for embeddings to avoid regenerating them
         self.embedding_cache_file = "all_data_embedding_cache.npy"
@@ -72,10 +72,13 @@ class AfroZoomerAssistant:
             self.initialize_new_index()
 
     def _load_all_data(self):
-        """Loads data from all specified .docx files."""
+        """Loads data from all .docx files in the root directory."""
         all_chunks = []
-        all_chunks.extend(load_data_from_docx("zoomer_faqs.docx"))
-        all_chunks.extend(load_data_from_docx("zoomer.docx"))  # Assuming the other file is named "zoomer.docx"
+        for filename in os.listdir('.'):
+            if filename.endswith(".docx"):
+                filepath = os.path.join('.', filename)
+                chunks = load_data_from_docx(filepath)
+                all_chunks.extend(chunks)
         return [chunk for chunk in all_chunks if chunk] # Remove any empty strings
 
     def initialize_from_cache(self):
