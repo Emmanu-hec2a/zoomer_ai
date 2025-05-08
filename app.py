@@ -144,8 +144,12 @@ class AfroZoomerAssistant:
             if not context:
                 return "I'm not sure about that. Can you provide more context?"
 
+            system_instruction = "You are AfroZoomer, an assistant who answers questions about Zoomer Africa. " \
+                                 "Based on the provided context, answer the user's question accurately. " \
+                                 "If the context doesn't explicitly mention the founder, state that the information is not available in the current documents."
+
             messages = [
-                {"role": "system", "content": "You are AfroZoomer, an assistant who answers questions about Zoomer Africa."},
+                {"role": "system", "content": system_instruction},
                 {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {user_input}"}
             ]
 
@@ -158,8 +162,8 @@ class AfroZoomerAssistant:
             )
 
             answer = response.choices[0].message.content.strip()
-            if "I'm not sure" in answer or "I don't know" in answer:
-                return "I'm not sure about that. Can you provide more context?"
+            if "I'm not sure" in answer or "I don't know" in answer or "not available in the current documents" in answer.lower():
+                return "I'm not sure about that based on the information I have. Can you provide more context?"
 
             return answer
 
