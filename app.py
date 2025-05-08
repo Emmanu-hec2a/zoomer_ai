@@ -1,13 +1,13 @@
-from flask import Flask, render_template, request, jsonify 
-from openai import OpenAI 
-import datetime 
-from docx import Document 
-import os 
-from dotenv import load_dotenv 
-import numpy as np 
-import faiss 
-import time 
-import backoff 
+from flask import Flask, render_template, request, jsonify
+from openai import OpenAI
+import datetime
+from docx import Document
+import os
+from dotenv import load_dotenv
+import numpy as np
+import faiss
+import time
+import backoff
 import glob
 
 app = Flask(__name__)
@@ -26,8 +26,6 @@ faq_chunks = []
 for doc in docs:
     doc_file = Document(doc)
     faq_chunks.extend([para.text.strip() for para in doc_file.paragraphs if para.text.strip()])
-
-# Rest of your code...
 
 # Initialize NetMind API
 client = OpenAI(
@@ -140,35 +138,34 @@ class AfroZoomerAssistant:
             return "\n".join(self.faq_chunks[:3])
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=3)
-def get_response(self, user_input):
-    try:
-        context = self.get_contextual_faq(user_input)
-        if not context:
-            return "I'm not sure about that. Can you provide more context?"
-        
-        messages = [
-            {"role": "system", "content": "You are AfroZoomer, an assistant who answers questions about Zoomer Africa."},
-            {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {user_input}"}
-        ]
-        
-        response = client.chat.completions.create(
-            model="Qwen/Qwen3-8B",
-            messages=messages,
-            max_tokens=4096,
-            temperature=0.6,
-            top_p=0.9,
-        )
-        
-        answer = response.choices[0].message.content.strip()
-        if "I'm not sure" in answer or "I don't know" in answer:
-            return "I'm not sure about that. Can you provide more context?"
-        
-        return answer
-    
-    except Exception as e:
-        print(f"Error getting response: {e}")
-        return "I'm sorry, I encountered an error. Please try again later."
-```
+    def get_response(self, user_input):
+        try:
+            context = self.get_contextual_faq(user_input)
+            if not context:
+                return "I'm not sure about that. Can you provide more context?"
+
+            messages = [
+                {"role": "system", "content": "You are AfroZoomer, an assistant who answers questions about Zoomer Africa."},
+                {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {user_input}"}
+            ]
+
+            response = client.chat.completions.create(
+                model="Qwen/Qwen3-8B",
+                messages=messages,
+                max_tokens=4096,
+                temperature=0.6,
+                top_p=0.9,
+            )
+
+            answer = response.choices[0].message.content.strip()
+            if "I'm not sure" in answer or "I don't know" in answer:
+                return "I'm not sure about that. Can you provide more context?"
+
+            return answer
+
+        except Exception as e:
+            print(f"Error getting response: {e}")
+            return "I'm sorry, I encountered an error. Please try again later."
 
 # Initialize assistant on first request instead of at startup
 assistant = None
