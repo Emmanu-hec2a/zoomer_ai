@@ -19,14 +19,14 @@ client = OpenAI(
     api_key=os.getenv("OPEN_API_KEY")
 )
 
-# ===== Load Zoomer Africa FAQ =====
-def load_faq_from_docx(filepath="zoomer_faqs.docx"):
+# ===== Load Zoomer Africa Data from DOCX Files =====
+def load_data_from_docx(filepath):
     """Loads text content from a .docx file."""
     try:
         doc = Document(filepath)
-        faq_chunks = [para.text.strip() for para in doc.paragraphs if para.text.strip()]
-        print(f"Loaded {len(faq_chunks)} paragraphs from {filepath}")
-        return faq_chunks
+        chunks = [para.text.strip() for para in doc.paragraphs if para.text.strip()]
+        print(f"Loaded {len(chunks)} paragraphs from {filepath}")
+        return chunks
     except FileNotFoundError:
         print(f"Error: File not found at {filepath}")
         return []
@@ -58,11 +58,11 @@ class AfroZoomerAssistant:
         self.conversation_history = []
         self.embedding_dim = None
         self.index = None
-        self.faq_chunks = load_faq_from_docx()  # Load directly in the constructor
+        self.data_chunks = self._load_all_data()  # Load data from both files
 
         # Use a persistent cache for embeddings to avoid regenerating them
-        self.embedding_cache_file = "embedding_cache.npy"
-        self.chunks_cache_file = "chunks_cache.txt"
+        self.embedding_cache_file = "all_data_embedding_cache.npy"
+        self.chunks_cache_file = "all_data_chunks_cache.txt"
 
         # Load or create index
         try:
@@ -71,10 +71,17 @@ class AfroZoomerAssistant:
             print(f"Cache not found or error: {e}. Building new index...")
             self.initialize_new_index()
 
+    def _load_all_data(self):
+        """Loads data from all specified .docx files."""
+        all_chunks = []
+        all_chunks.extend(load_data_from_docx("zoomer_faqs.docx"))
+        all_chunks.extend(load_data_from_docx("zoomer.docx"))  # Assuming the other file is named "zoomer.docx"
+        return [chunk for chunk in all_chunks if chunk] # Remove any empty strings
+
     def initialize_from_cache(self):
         """Load pre-computed embeddings and chunks from cache"""
-        if not self.faq_chunks:
-            raise FileNotFoundError("No FAQ chunks loaded. Cannot initialize from cache.")
+        if not self.data_chunks:
+            raise FileNotFoundError("No data chunks loaded. Cannot initialize from cache.")
 
         try:
             saved_embeddings = np.load(self.embedding_cache_file)
@@ -84,10 +91,10 @@ class AfroZoomerAssistant:
 
             with open(self.chunks_cache_file, 'r', encoding='utf-8') as f:
                 cached_chunks = [line.strip() for line in f.readlines()]
-                if len(cached_chunks) == len(self.faq_chunks) and all(c1 == c2 for c1, c2 in zip(cached_chunks, self.faq_chunks)):
-                    print(f"Loaded {len(self.faq_chunks)} FAQ chunks and embeddings from cache")
+                if len(cached_chunks) == len(self.data_chunks) and all(c1 == c2 for c1, c2 in zip(cached_chunks, self.data_chunks)):
+                    print(f"Loaded {len(self.data_chunks)} data chunks and embeddings from cache")
                 else:
-                    print("Cached chunks do not match current FAQ. Rebuilding index.")
+                    print("Cached chunks do not match current data. Rebuilding index.")
                     raise FileNotFoundError  # Force rebuild
         except FileNotFoundError:
             raise
@@ -96,17 +103,17 @@ class AfroZoomerAssistant:
             raise
 
     def initialize_new_index(self):
-        """Build a new index by computing embeddings for all chunks"""
-        if not self.faq_chunks:
-            print("No FAQ chunks to index.")
+        """Build a new index by computing embeddings for all data chunks"""
+        if not self.data_chunks:
+            print("No data chunks to index.")
             return
 
-        print(f"Building new FAISS index for {len(self.faq_chunks)} chunks...")
+        print(f"Building new FAISS index for {len(self.data_chunks)} chunks...")
 
         # Get dimension from sample if not already known
-        if self.embedding_dim is None and self.faq_chunks:
+        if self.embedding_dim is None and self.data_chunks:
             try:
-                sample_emb = get_embedding(self.faq_chunks[0])
+                sample_emb = get_embedding(self.data_chunks[0])
                 self.embedding_dim = len(sample_emb)
                 self.index = faiss.IndexFlatL2(self.embedding_dim)
             except Exception as e:
@@ -115,10 +122,10 @@ class AfroZoomerAssistant:
 
         all_embeddings = []
         batch_size = 5  # Adjust as needed based on rate limits and memory
-        num_chunks = len(self.faq_chunks)
+        num_chunks = len(self.data_chunks)
 
         for i in range(0, num_chunks, batch_size):
-            batch = self.faq_chunks[i:i+batch_size]
+            batch = self.data_chunks[i:i+batch_size]
             print(f"Processing batch {i//batch_size + 1}/{(num_chunks + batch_size - 1)//batch_size}")
             batch_embeddings = []
             for chunk in batch:
@@ -149,51 +156,51 @@ class AfroZoomerAssistant:
                 embeddings_np = np.array(all_embeddings).astype("float32")
                 np.save(self.embedding_cache_file, embeddings_np)
                 with open(self.chunks_cache_file, 'w', encoding='utf-8') as f:
-                    for chunk in self.faq_chunks:
+                    for chunk in self.data_chunks:
                         f.write(chunk + '\n')
-                print(f"Saved {len(self.faq_chunks)} FAQ chunks and embeddings to cache")
+                print(f"Saved {len(self.data_chunks)} data chunks and embeddings to cache")
             except Exception as e:
                 print(f"Failed to save cache: {e}")
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=3)
-    def get_contextual_faq(self, user_prompt):
-        if self.index is None or not self.faq_chunks:
-            return "No FAQ data available."
+    def get_contextual_data(self, user_prompt):
+        if self.index is None or not self.data_chunks:
+            return "No data available."
         try:
             emb = get_embedding(user_prompt)
             emb_np = np.array([emb]).astype("float32")
-            D, I = self.index.search(emb_np, k=3)  # top 3 FAQ matches
-            relevant_faqs = [self.faq_chunks[i] for i in I[0] if i < len(self.faq_chunks)]
-            return "\n".join(relevant_faqs)
+            D, I = self.index.search(emb_np, k=3)  # top 3 data matches
+            relevant_data = [self.data_chunks[i] for i in I[0] if i < len(self.data_chunks)]
+            return "\n".join(relevant_data)
         except Exception as e:
-            print(f"Error getting contextual FAQ: {e}")
-            return "\n".join(self.faq_chunks[:3]) # Fallback
+            print(f"Error getting contextual data: {e}")
+            return "\n".join(self.data_chunks[:3]) # Fallback
 
-    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
     def get_response(self, user_input):
-        if not self.faq_chunks:
-            return "Sorry, the FAQ data is currently unavailable."
+        if not self.data_chunks:
+            return "Sorry, the Zoomer Africa data is currently unavailable."
         try:
-            context = self.get_contextual_faq(user_input)
+            context = self.get_contextual_data(user_input)
 
             messages = [
                 {
                     "role": "system",
                     "content": (
                         "You are AfroZoomer, an assistant for Zoomer Africa. "
-                        "Provide helpful and accurate answers, but keep them short and summarized "
-                        "so users on mobile can quickly understand. If needed, provide a short example or tip."
-                        "Aim to answer clearly in under 200 words. Avoid unnecessary elaboration."
+                        f"Use the following information to answer the user's question. "
+                        f"If the information is not directly available in the context, "
+                        f"respond with: 'I'm sorry, but I cannot find that information within the Zoomer Africa knowledge base.'\n\n"
+                        f"Context:\n{context}"
                     )
                 },
-                {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {user_input}"}
+                {"role": "user", "content": user_input}
             ]
             response = client.chat.completions.create(
                 model="Qwen/Qwen3-8B",
                 messages=messages,
-                max_tokens=1000,
-                temperature=0.6,
-                top_p=0.9,
+                max_tokens=200, # Limit response length
+                temperature=0.2, # Reduce randomness for more factual answers
+                top_p=0.8,
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
