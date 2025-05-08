@@ -1,25 +1,33 @@
-from flask import Flask, render_template, request, jsonify
-from openai import OpenAI
-import datetime
-from docx import Document
-import os
-from dotenv import load_dotenv
-import numpy as np
-import faiss
-import time
-import backoff  # You'll need to install this: pip install backoff
-import glob # Add this import
+from flask import Flask, render_template, request, jsonify 
+from openai import OpenAI 
+import datetime 
+from docx import Document 
+import os 
+from dotenv import load_dotenv 
+import numpy as np 
+import faiss 
+import time 
+import backoff 
+import glob
 
 app = Flask(__name__)
+load_dotenv() # Load environment variables from .env file
 
-load_dotenv()  # Load environment variables from .env file
+# Initialize NetMind API
+client = OpenAI(
+    base_url="https://api.netmind.ai/inference-api/openai/v1",
+    api_key=os.getenv("OPEN_API_KEY")
+)
 
 # Load all .docx files in the directory
 docs = glob.glob("*.docx")
+
 faq_chunks = []
 for doc in docs:
     doc_file = Document(doc)
     faq_chunks.extend([para.text.strip() for para in doc_file.paragraphs if para.text.strip()])
+
+# Rest of your code...
 
 # Initialize NetMind API
 client = OpenAI(
