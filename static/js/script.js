@@ -20,9 +20,46 @@ function toggleSection(header) {
         const navLinks = document.querySelector('.nav-links');
 
         if (mobileMenuBtn && navLinks) {
-            mobileMenuBtn.addEventListener('click', function() {
+            // Function to toggle menu state
+            function toggleMenu() {
                 navLinks.classList.toggle('active');
-                this.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
+                mobileMenuBtn.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
+            }
+
+            // Toggle menu when menu button is clicked
+            mobileMenuBtn.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent event from bubbling up
+                toggleMenu();
+            });
+
+            // Close menu when clicking anywhere on the document
+            document.addEventListener('click', function(event) {
+                // Check if menu is open and the click is not on the menu or menu button
+                if (navLinks.classList.contains('active') && 
+                    !navLinks.contains(event.target) && 
+                    event.target !== mobileMenuBtn) {
+                    toggleMenu();
+                }
+            });
+
+            // Handle touch events for mobile devices
+            document.addEventListener('touchstart', function(event) {
+                // Check if menu is open and the touch is not on the menu or menu button
+                if (navLinks.classList.contains('active') && 
+                    !navLinks.contains(event.target) && 
+                    event.target !== mobileMenuBtn) {
+                    toggleMenu();
+                }
+            });
+
+            // Prevent clicks on nav links from closing the menu
+            navLinks.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+
+            // Also handle touch events on nav links
+            navLinks.addEventListener('touchstart', function(event) {
+                event.stopPropagation();
             });
         }
 

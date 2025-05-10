@@ -20,6 +20,7 @@
             margin: 0;
             padding: 0;
             background-color: #F8FAFC;
+            /* margin-top: 60px; */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -123,18 +124,19 @@
         }
 
          /* Rounded Navbar */
-        .navbar {
+       .navbar {
+            position: fixed;
+            top: 10px; /* use top instead of margin-top */
+            left: 50%;
+            transform: translateX(-50%); /* center horizontally */
             background-color: #fff;
-            border-radius: 25px; /* This creates the rounded edges */
-            padding: 6px 20px; /* Reduced vertical padding */
-            margin: 0 auto 2px; /* Center the navbar and add some bottom margin */
-            width: 90%; /* Make it less than full width */
-            max-width: 1200px; /* Add a max-width to prevent it from getting too wide */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Smaller shadow */
-            position: relative; /* Ensure proper positioning */
-            left: 0; /* Reset any left positioning */
-            margin-top: 5px;
-
+            border-radius: 25px;
+            padding: 6px 20px;
+            width: 90%;
+            max-width: 1200px;
+            min-height: 40px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
 
         .navbar:hover {
@@ -229,18 +231,17 @@
 
             .mobile-menu-btn {
                 display: block;
-                margin-right: 20px;
+                margin-right: 15px;
             }
         }
 
         /* Main content */
         .main-content {
-            /* padding-top: 80px; */
-            padding: 18px;
+            margin-top: 90px; /* match navbar height exactly */
+            padding: 18px;    /* keep general padding */
             display: grid;
             grid-template-columns: 1fr;
             gap: 24px;
-            margin-top: 3px;
         }
 
         @media (min-width: 768px) {
