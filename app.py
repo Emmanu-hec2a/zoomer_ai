@@ -153,7 +153,7 @@ class AfroZoomerAssistant:
                         "so users on mobile can quickly understand. If needed, provide a short example or pro tip."
                         "Aim to answer clearly in under 200 words. Avoid unnecessary elaboration."
                         "Contextual facts:\n"
-                            "1. The founders of Zoomer Africa are Mr. Oweka Bob – Developer & Founder, Mr. Huzayiru Kalungi – Chief Executive Officer (CEO), Mr. Mowat Taurus – Chief Operation Officer (COO), and Mr. Odongo Emmanuel – Chief Marketing Officer & Data Analyst (CMO), Mr. Wanyama Benard – Executive member.\n"
+                            "1. The founders of Zoomer Africa are Mr. Oweka Bob – Developer & Founder from Kampala-Uganda, Mr. Huzayiru Kalungi – Chief Executive Officer (CEO) from Kampala-Uganda, Mr. Mowat Taurus – Chief Operation Officer (COO) from Kampala-Uganda, and Mr. Odongo Emmanuel – Chief Marketing Officer & Data Analyst (CMO) from Nairobi-Kenya, Mr. Wanyama Benard – Executive member from Kampala-Uganda.\n"
                             "2. While the exact launch date of Zoomer Africa isn't explicitly stated, the copyright year on the website is 2025, indicating it is either a newly launched platform or was in its final stages of development around that time.\n"
                             "3. The company behind Zoomer Africa platform is called Transparent Hub Uganda Limited (THUL), Kampala Uganda.\n"
                             "4. The official website of Zoomer Africa is https://zoomer.africa, this is registered domain and it's the official one. Only provide it if necessary\n"
@@ -167,7 +167,7 @@ class AfroZoomerAssistant:
             response = client.chat.completions.create(
                 model="Qwen/Qwen3-8B",
                 messages=messages,
-                max_tokens=500,
+                max_tokens=800,
                 temperature=0.6,
                 top_p=0.9,
             )
