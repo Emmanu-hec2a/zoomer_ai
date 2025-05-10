@@ -171,6 +171,12 @@ function toggleSection(header) {
                     addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
                 });
             });
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/static/service-worker.js')
+                    .then(reg => console.log('✅ Service Worker registered'))
+                    .catch(err => console.error('❌ Service Worker failed:', err));
+            }
             
             function addMessage(sender, content) {
                 const messageDiv = document.createElement('div');
