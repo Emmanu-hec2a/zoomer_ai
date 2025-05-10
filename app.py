@@ -121,8 +121,8 @@ class AfroZoomerAssistant:
             emb = get_embedding(user_prompt)
             emb_np = np.array([emb]).astype("float32")
             _, I = self.index.search(emb_np, k=3)  # top 3 FAQ matches
-            relevant_faqs = [self.faq_chunks[i] for i in I[0] if i < len(self.faq_chunks)]
-            return "\n".join(relevant_faqs)
+            relevant_faqs = [self.faq_chunks[i][:300] for i in I[0] if i < len(self.faq_chunks)]
+            return "\n".join(relevant_faqs[:2])
         except Exception as e:
             print(f"Error getting contextual FAQ: {e}")
             # Fallback to returning first few FAQs
@@ -137,7 +137,7 @@ class AfroZoomerAssistant:
             self.conversation_history.append({"role": "user", "content": user_input})
 
             # Trim to last 3 turns (user + assistant = 6 messages max)
-            max_turns = 3
+            max_turns = 2
             if len(self.conversation_history) > max_turns * 2:
                 self.conversation_history = self.conversation_history[-max_turns * 2:]
 
@@ -156,7 +156,7 @@ class AfroZoomerAssistant:
                             "1. The founders of Zoomer Africa are Mr. Oweka Bob – Developer & Founder, Mr. Huzayiru Kalungi – Chief Executive Officer (CEO), Mr. Mowat Taurus – Chief Operation Officer (COO), and Mr. Odongo Emmanuel – Chief Marketing Officer & Data Analyst (CMO), Mr. Wanyama Benard – Executive member.\n"
                             "2. While the exact launch date of Zoomer Africa isn't explicitly stated, the copyright year on the website is 2025, indicating it is either a newly launched platform or was in its final stages of development around that time.\n"
                             "3. The company behind Zoomer Africa platform is called Transparent Hub Uganda Limited (THUL), Kampala Uganda.\n"
-                            "4. The official website of Zoomer Africa is https://zoomer.africa, this is registered domain and it's the official one.\n"
+                            "4. The official website of Zoomer Africa is https://zoomer.africa, this is registered domain and it's the official one. Only provide it if necessary\n"
                             
 
                     )
@@ -167,7 +167,7 @@ class AfroZoomerAssistant:
             response = client.chat.completions.create(
                 model="Qwen/Qwen3-8B",
                 messages=messages,
-                max_tokens=1000,
+                max_tokens=500,
                 temperature=0.6,
                 top_p=0.9,
             )
