@@ -178,6 +178,20 @@ function toggleSection(header) {
                     .catch(err => console.error('❌ Service Worker failed:', err));
             }
             
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){ dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-VP6344NLKP');
+
+            document.getElementById("myButton").addEventListener("click", function() {
+                gtag('event', 'click', {
+                    'event_category': 'Button',
+                    'event_label': 'Send Message',
+                    'value': 1
+                });
+            });
+
+
             function addMessage(sender, content) {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `message ${sender}-message`;
