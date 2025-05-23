@@ -183,7 +183,7 @@ function toggleSection(header) {
             gtag('js', new Date());
             gtag('config', 'G-VP6344NLKP');
 
-            document.getElementById("myButton").addEventListener("click", function() {
+            document.getElementById("sendBtn").addEventListener("click", function() {
                 gtag('event', 'click', {
                     'event_category': 'Button',
                     'event_label': 'Send Message',
