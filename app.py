@@ -165,10 +165,11 @@ class AfroZoomerAssistant:
             ] + self.conversation_history
 
             response = client.chat.completions.create(
-                model="Qwen/Qwen3-8B",
+                model="Qwen/Qwen2.5-7B-Instruct",
                 messages=messages,
+                store=True,
                 max_tokens=800,
-                temperature=0.6,
+                temperature=0.7,
                 top_p=0.9,
             )
             reply = response.choices[0].message.content.strip()
