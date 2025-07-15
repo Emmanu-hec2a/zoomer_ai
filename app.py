@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import numpy as np
 import faiss
 import time
-import backoff  # You'll need to install this: pip install backoff
+import backoff 
 
 app = Flask(__name__)
 
