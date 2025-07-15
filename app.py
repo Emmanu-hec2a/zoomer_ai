@@ -16,7 +16,7 @@ load_dotenv()  # Load environment variables from .env file
 # Initialize NetMind API
 client = OpenAI(
     base_url="https://api.netmind.ai/inference-api/openai/v1",
-    api_key=os.getenv("OPEN_API_KEY")
+    api_key=os.getenv("OPENAI_API_KEY")
 )
 
 # ===== Load and Embed Zoomer Africa FAQ =====
