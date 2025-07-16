@@ -204,4 +204,4 @@ def ask():
 if __name__ == "__main__":
     # Listen on the right port for Render
     port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=port)

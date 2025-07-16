@@ -3,47 +3,964 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zoomer Africa</title>
-    <!-- Manifest -->
+    <title>Zoomer Africa - AI Assistant</title>
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#111827" />
-
-    <!-- Add these for mobile -->
+    <meta name="theme-color" content="#059669" />
+    
+    <!-- Mobile optimization -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='image/chatbot.png') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='image/chatbot.png') }}">
+    
+    <!-- External resources -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <!-- SVG favicon -->
-    <!-- <link rel="icon" href="/favicon.svg" type="image/svg+xml"> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VP6344NLKP"></script>
+        :root {
+            /* African-inspired color palette */
+            --primary: 31 77% 52%;
+            --primary-hover: 31 77% 45%;
+            --primary-light: 31 77% 65%;
+            --secondary: 45 93% 47%;
+            --accent: 22 90% 52%;
+            --success: 142 71% 45%;
+            --warning: 38 92% 50%;
+            --danger: 0 84% 60%;
+            
+            /* Neutral colors */
+            --background: 210 20% 98%;
+            --surface: 0 0% 100%;
+            --surface-elevated: 210 20% 99%;
+            --muted: 210 40% 96%;
+            --border: 214 32% 91%;
+            --border-hover: 220 13% 85%;
+            
+            /* Text colors */
+            --foreground: 222 84% 5%;
+            --foreground-muted: 215 16% 47%;
+            --foreground-subtle: 220 9% 65%;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
+            --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--accent)));
+            --gradient-surface: linear-gradient(180deg, hsl(var(--surface)), hsl(var(--surface-elevated)));
+            --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--accent)) 100%);
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --shadow-glow: 0 0 40px hsl(var(--primary) / 0.3);
+            
+            /* Animations */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            
+            /* Border radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+        }
+
+        [data-theme="dark"] {
+            --background: 224 71% 4%;
+            --surface: 224 71% 8%;
+            --surface-elevated: 224 71% 12%;
+            --muted: 217 33% 17%;
+            --border: 217 33% 17%;
+            --border-hover: 217 33% 22%;
+            
+            --foreground: 210 40% 98%;
+            --foreground-muted: 215 20% 65%;
+            --foreground-subtle: 217 11% 45%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.6;
+            transition: all var(--transition-normal);
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: hsl(var(--muted));
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: hsl(var(--border-hover));
+            border-radius: var(--radius-md);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(var(--foreground-subtle));
+        }
+
+        /* Navigation */
+        .navbar {
+            background: hsl(var(--surface) / 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid hsl(var(--border));
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            transition: all var(--transition-normal);
+        }
+
+        .navbar.scrolled {
+            box-shadow: var(--shadow-lg);
+            background: hsl(var(--surface) / 0.95);
+        }
+
+        .nav-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-title a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: hsl(var(--foreground));
+            font-weight: 800;
+            font-size: 1.5rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all var(--transition-normal);
+            position: relative;
+        }
+
+        .nav-title a:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-title a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-sm);
+            transition: width var(--transition-normal);
+        }
+
+        .nav-title a:hover::after {
+            width: 100%;
+        }
+
+        .chatbot-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-bounce);
+        }
+
+        .chatbot-logo:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: hsl(var(--foreground-muted));
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: left var(--transition-normal);
+            z-index: -1;
+        }
+
+        .nav-links a:hover::before {
+            left: 0;
+        }
+
+        .nav-links a:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .mode-toggle {
+            background: hsl(var(--surface));
+            border: 1px solid hsl(var(--border));
+            color: hsl(var(--foreground-muted));
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-lg);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-secondary);
+            transition: left var(--transition-normal);
+            z-index: -1;
+        }
+
+        .mode-toggle:hover::before {
+            left: 0;
+        }
+
+        .mode-toggle:hover {
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: hsl(var(--foreground));
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-normal);
+        }
+
+        .mobile-menu-btn:hover {
+            background: hsl(var(--muted));
+            transform: scale(1.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 8rem 2rem 2rem;
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 3rem;
+            min-height: 100vh;
+        }
+
+        /* Platform Guide */
+        .platform-guide {
+            background: var(--gradient-surface);
+            border-radius: var(--radius-2xl);
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid hsl(var(--border));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .platform-guide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-hero);
+        }
+
+        .platform-guide h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: var(--gradient-hero);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.2;
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            margin-bottom: 2rem;
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            transition: all var(--transition-normal);
+            animation: fadeInScale 0.6s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .section:nth-child(1) { animation-delay: 0.1s; }
+        .section:nth-child(2) { animation-delay: 0.2s; }
+        .section:nth-child(3) { animation-delay: 0.3s; }
+        .section:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInScale {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .section:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+            border-color: hsl(var(--primary) / 0.3);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem;
+            background: hsl(var(--surface));
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            position: relative;
+        }
+
+        .section-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: var(--gradient-primary);
+            opacity: 0.1;
+            transition: width var(--transition-normal);
+        }
+
+        .section-header:hover::before {
+            width: 100%;
+        }
+
+        .flex-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .flex-title .icon {
+            color: hsl(var(--primary));
+            font-size: 1.5rem;
+            width: 48px;
+            height: 48px;
+            background: hsl(var(--primary) / 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-bounce);
+        }
+
+        .section-header:hover .flex-title .icon {
+            transform: scale(1.1) rotate(10deg);
+            background: hsl(var(--primary) / 0.2);
+        }
+
+        .flex-title .title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .arrow {
+            color: hsl(var(--foreground-muted));
+            transition: all var(--transition-bounce);
+            font-size: 1.25rem;
+        }
+
+        .section.active .arrow {
+            transform: rotate(180deg);
+            color: hsl(var(--primary));
+        }
+
+        .section-content {
+            padding: 0 2rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: all var(--transition-slow);
+            background: hsl(var(--background));
+        }
+
+        .section.active .section-content {
+            max-height: 1000px;
+            padding: 0 2rem 2rem;
+        }
+
+        .section-content p {
+            color: hsl(var(--foreground-muted));
+            margin-bottom: 2rem;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .screenshot-item {
+            background: var(--gradient-surface);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            border: 1px solid hsl(var(--border));
+            transition: all var(--transition-normal);
+        }
+
+        .screenshot-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .screenshot-item h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            margin-bottom: 0.75rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .screenshot-item p {
+            color: hsl(var(--foreground-muted));
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .screenshot-item ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .screenshot-item li {
+            padding: 0.75rem 0;
+            color: hsl(var(--foreground-muted));
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all var(--transition-normal);
+        }
+
+        .screenshot-item li:hover {
+            color: hsl(var(--foreground));
+            transform: translateX(4px);
+        }
+
+        .screenshot-item li:before {
+            content: "✓";
+            color: hsl(var(--success));
+            font-weight: bold;
+            font-size: 1.1rem;
+            width: 20px;
+            height: 20px;
+            background: hsl(var(--success) / 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Chat Assistant */
+        .ask-afrozoomer {
+            background: hsl(var(--surface));
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid hsl(var(--border));
+            display: flex;
+            flex-direction: column;
+            height: 700px;
+            overflow: hidden;
+            position: sticky;
+            top: 120px;
+            transition: all var(--transition-normal);
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .ask-afrozoomer:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .chat-header {
+            background: var(--gradient-hero);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .chat-header h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            scroll-behavior: smooth;
+            background: hsl(var(--background));
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            animation: messageSlideIn 0.4s ease-out;
+        }
+
+        @keyframes messageSlideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-bounce);
+        }
+
+        .avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .assistant-avatar {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .user-avatar {
+            background: var(--gradient-secondary);
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            max-width: 85%;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-normal);
+        }
+
+        .message-content:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .assistant-content {
+            background: hsl(var(--surface));
+            border: 1px solid hsl(var(--border));
+            border-bottom-left-radius: var(--radius-md);
+        }
+
+        .user-content {
+            background: var(--gradient-primary);
+            color: white;
+            border-bottom-right-radius: var(--radius-md);
+            margin-left: auto;
+        }
+
+        .message.user-message {
+            flex-direction: row-reverse;
+        }
+
+        .message.user-message .message-content {
+            margin-left: auto;
+        }
+
+        .copy-btn {
+            background: hsl(var(--muted));
+            border: 1px solid hsl(var(--border));
+            color: hsl(var(--foreground-muted));
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .copy-btn:hover {
+            background: hsl(var(--primary));
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* Chat Input */
+        .chat-input {
+            padding: 2rem;
+            border-top: 1px solid hsl(var(--border));
+            background: hsl(var(--surface));
+        }
+
+        .input {
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            background: hsl(var(--background));
+            border: 2px solid hsl(var(--border));
+            border-radius: var(--radius-xl);
+            padding: 1rem 1.25rem;
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
+            transition: left var(--transition-normal);
+        }
+
+        .input:focus-within {
+            border-color: hsl(var(--primary));
+            box-shadow: 0 0 0 4px hsl(var(--primary) / 0.1);
+        }
+
+        .input:focus-within::before {
+            left: 100%;
+        }
+
+        .input textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+            font-size: 1rem;
+            color: hsl(var(--foreground));
+            min-height: 24px;
+            max-height: 120px;
+            line-height: 1.5;
+        }
+
+        .input textarea::placeholder {
+            color: hsl(var(--foreground-muted));
+        }
+
+        .send-button {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-bounce);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .send-button:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Loading animation */
+        .thinking {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: hsl(var(--foreground-muted));
+            font-style: italic;
+        }
+
+        .dot-typing {
+            display: inline-flex;
+            gap: 0.25rem;
+        }
+
+        .dot-typing span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: hsl(var(--primary));
+            animation: dotTyping 1.4s infinite ease-in-out;
+        }
+
+        .dot-typing span:nth-child(1) { animation-delay: 0s; }
+        .dot-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .dot-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dotTyping {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                padding: 7rem 1.5rem 2rem;
+            }
+
+            .ask-afrozoomer {
+                height: 600px;
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: hsl(var(--surface));
+                border-top: 1px solid hsl(var(--border));
+                flex-direction: column;
+                padding: 2rem;
+                box-shadow: var(--shadow-xl);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .main-content {
+                padding: 6rem 1rem 2rem;
+                gap: 1.5rem;
+            }
+
+            .platform-guide {
+                padding: 2rem;
+            }
+
+            .platform-guide h1 {
+                font-size: 2.5rem;
+            }
+
+            .ask-afrozoomer {
+                height: 500px;
+            }
+
+            .section-header {
+                padding: 1.5rem;
+            }
+
+            .screenshot-item {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Micro-interactions */
+        .nav-links a,
+        .mode-toggle,
+        .section,
+        .copy-btn,
+        .send-button {
+            transform-origin: center;
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .floating-shape {
+            position: absolute;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            opacity: 0.05;
+            animation: float 20s infinite linear;
+        }
+
+        .floating-shape:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            left: 10%;
+            animation-delay: -5s;
+        }
+
+        .floating-shape:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 10%;
+            animation-delay: -10s;
+        }
+
+        .floating-shape:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: -15s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(20px) rotate(240deg); }
+            100% { transform: translateY(0px) rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
+    <!-- Floating background elements -->
+    <div class="floating-elements">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <nav class="navbar" id="navbar">
         <div class="nav-inner">
-            <div class="nav-title"><a href="https://zoomer.africa" target="_blank" class="nav-link">
-                <img src="{{ url_for('static', filename='image/logo.png') }}" alt="Chatbot Logo" class="chatbot-logo">
-                ZOOMER AI
+            <div class="nav-title">
+                <a href="https://zoomer.africa" target="_blank" class="nav-link">
+                    <img src="{{ url_for('static', filename='image/logo.png') }}" alt="Zoomer Africa" class="chatbot-logo">
+                    ZOOMER AI
                 </a>
             </div>
-            <div class="mobile-menu-btn">☰</div>
-            <div class="nav-links">
-                <button class="mode-toggle" id="toggle-mode"><i class="fas fa-moon"></i> Mode</button>
-                <a href="https://zoomer.africa" target="_blank"><i class="fas fa-home fa-lg"> Feeds</i></a>
-                <a href="/profile"><i class="fas fa-user fa-lg"></i> Profile</a>
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</div>
+            <div class="nav-links" id="navLinks">
+                <button class="mode-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                    <span id="themeText">Dark Mode</span>
+                </button>
+                <a href="https://zoomer.africa" target="_blank">
+                    <i class="fas fa-home"></i>
+                    <span>Feeds</span>
+                </a>
+                <a href="/profile">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
             </div>
         </div>
     </nav>
 
-    <div class="container main-content">
+    <div class="main-content">
         <div class="platform-guide">
             <h1>Welcome to Zoomer Africa</h1>
             <div class="platform-guide-sections">
-                <div class="section">
-                    <div class="section-header" onclick="toggleSection(this)">
+                <div class="section" onclick="toggleSection(this)">
+                    <div class="section-header">
                         <div class="flex-title">
                             <i class="fas fa-info-circle icon"></i>
                             <span class="title">About Zoomer Africa</span>
@@ -51,26 +968,23 @@
                         <i class="fas fa-chevron-down arrow"></i>
                     </div>
                     <div class="section-content">
-                        <p>Zoomer Africa is a social media platform developed by Transparent Hub Uganda Limited (THUL). As the leading platform for authentic African storytelling and community engagement, our mission is to amplify African voices and create meaningful connections across the continent.</p>
-                        <div class="screenshots-grid">
-                            <div class="screenshot-item">
-                                <h3>Our Platform</h3>
-                                <p>Connecting African voices</p>
-                                <!-- <img src="https://ucarecdn.com/27beb8d8-7f09-47ae-a28d-22a0a5bc826e/-/format/auto/" alt="Our Platform Screenshot"> -->
-                                <ul>
-                                    <li>Developed by Transparent Hub Uganda Limited (THUL)</li>
-                                    <li>Focus on authentic African storytelling</li>
-                                    <li>Digital inclusion and empowerment</li>
-                                    <li>Cross-cultural understanding</li>
-                                    <li>Professional networking platform</li>
-                                </ul>
-                            </div>
+                        <p>Zoomer Africa is a revolutionary social media platform developed by Transparent Hub Uganda Limited (THUL). As the leading platform for authentic African storytelling and community engagement, our mission is to amplify African voices and create meaningful connections across the continent.</p>
+                        <div class="screenshot-item">
+                            <h3>Our Platform</h3>
+                            <p>Connecting African voices across the continent with cutting-edge technology</p>
+                            <ul>
+                                <li>Developed by Transparent Hub Uganda Limited (THUL)</li>
+                                <li>Focus on authentic African storytelling</li>
+                                <li>Digital inclusion and empowerment initiatives</li>
+                                <li>Cross-cultural understanding and dialogue</li>
+                                <li>Professional networking platform for Africa</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
 
-                <div class="section">
-                    <div class="section-header" onclick="toggleSection(this)">
+                <div class="section" onclick="toggleSection(this)">
+                    <div class="section-header">
                         <div class="flex-title">
                             <i class="fas fa-th-large icon"></i>
                             <span class="title">Content & Categories</span>
@@ -78,53 +992,47 @@
                         <i class="fas fa-chevron-down arrow"></i>
                     </div>
                     <div class="section-content">
-                        <p>Share diverse content across multiple categories including Technology, Culture, Business, Education, Entertainment, Sports, Politics, and Health. Our platform provides comprehensive tools for creating and sharing African stories.</p>
-                        <div class="screenshots-grid">
-                            <div class="screenshot-item">
-                                <h3>Content Creation</h3>
-                                <p>Express your African story</p>
-                                <!-- <img src="https://ucarecdn.com/27beb8d8-7f09-47ae-a28d-22a0a5bc826e/-/format/auto/" alt="Content Creation Screenshot"> -->
-                                <ul>
-                                    <li>Rich text editor for storytelling</li>
-                                    <li>Image and media sharing</li>
-                                    <li>Story highlights feature</li>
-                                    <li>Content scheduling tools</li>
-                                    <li>Analytics dashboard</li>
-                                </ul>
-                            </div>
+                        <p>Share diverse content across multiple categories including Technology, Culture, Business, Education, Entertainment, Sports, Politics, and Health. Our platform provides comprehensive tools for creating and sharing authentic African stories.</p>
+                        <div class="screenshot-item">
+                            <h3>Content Creation</h3>
+                            <p>Express your authentic African story with powerful tools</p>
+                            <ul>
+                                <li>Rich text editor for immersive storytelling</li>
+                                <li>Advanced image and multimedia sharing</li>
+                                <li>Story highlights and featured content</li>
+                                <li>Smart content scheduling tools</li>
+                                <li>Comprehensive analytics dashboard</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
 
-                <div class="section">
-                    <div class="section-header" onclick="toggleSection(this)">
+                <div class="section" onclick="toggleSection(this)">
+                    <div class="section-header">
                         <div class="flex-title">
-                            <i class="fas fa-stream icon"></i>
+                            <i class="fas fa-users icon"></i>
                             <span class="title">Social Features</span>
                         </div>
                         <i class="fas fa-chevron-down arrow"></i>
                     </div>
                     <div class="section-content">
-                        <p>Connect and engage with content creators, journalists, and community members from across Africa. Share updates, track engagement, and participate in meaningful discussions.</p>
-                        <div class="screenshots-grid">
-                            <div class="screenshot-item">
-                                <h3>Engagement Tools</h3>
-                                <p>Connect with the community</p>
-                                <!-- <img src="https://ucarecdn.com/27beb8d8-7f09-47ae-a28d-22a0a5bc826e/-/format/auto/" alt="Engagement Tools Screenshot"> -->
-                                <ul>
-                                    <li>Real-time content sharing</li>
-                                    <li>Comments and reactions</li>
-                                    <li>Trending topics</li>
-                                    <li>Professional networking</li>
-                                    <li>Topic-focused discussions</li>
-                                </ul>
-                            </div>
+                        <p>Connect and engage with content creators, journalists, and community members from across Africa. Share updates, track engagement, and participate in meaningful discussions that matter to our continent.</p>
+                        <div class="screenshot-item">
+                            <h3>Engagement Tools</h3>
+                            <p>Connect with the vibrant African community</p>
+                            <ul>
+                                <li>Real-time content sharing and updates</li>
+                                <li>Interactive comments and reactions system</li>
+                                <li>Trending topics and hashtag discovery</li>
+                                <li>Professional networking opportunities</li>
+                                <li>Topic-focused discussion groups</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
 
-                <div class="section">
-                    <div class="section-header" onclick="toggleSection(this)">
+                <div class="section" onclick="toggleSection(this)">
+                    <div class="section-header">
                         <div class="flex-title">
                             <i class="fas fa-shield-alt icon"></i>
                             <span class="title">Community Guidelines</span>
@@ -132,19 +1040,17 @@
                         <i class="fas fa-chevron-down arrow"></i>
                     </div>
                     <div class="section-content">
-                        <p>Our platform promotes respectful dialogue, authentic African stories, and meaningful connections. We maintain high standards for content quality while ensuring user safety and cultural sensitivity.</p>
-                        <div class="screenshots-grid">
-                            <div class="screenshot-item">
-                                <h3>Platform Values</h3>
-                                <p>Building a positive community</p>
-                                <ul>
-                                    <li>Authenticity in storytelling</li>
-                                    <li>Cultural sensitivity and respect</li>
-                                    <li>User safety and privacy</li>
-                                    <li>Press freedom</li>
-                                    <li>Digital empowerment</li>
-                                </ul>
-                            </div>
+                        <p>Our platform promotes respectful dialogue, authentic African stories, and meaningful connections. We maintain the highest standards for content quality while ensuring user safety and cultural sensitivity across all interactions.</p>
+                        <div class="screenshot-item">
+                            <h3>Platform Values</h3>
+                            <p>Building a positive, inclusive community for all Africans</p>
+                            <ul>
+                                <li>Authenticity in storytelling and content</li>
+                                <li>Cultural sensitivity and mutual respect</li>
+                                <li>User safety and privacy protection</li>
+                                <li>Press freedom and freedom of expression</li>
+                                <li>Digital empowerment for all Africans</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -153,7 +1059,7 @@
 
         <div class="ask-afrozoomer">
             <div class="chat-header">
-                <h2 class="text-xl font-bold">AfroZoomer Assistant</h2>
+                <h2>AfroZoomer Assistant</h2>
             </div>
             
             <div class="chat-messages" id="chatMessages">
@@ -162,34 +1068,22 @@
                         <span>A</span>
                     </div>
                     <div class="message-content assistant-content">
-                        <p>👋🏾 Hello there! I'm <b>AfroZoomer</b> — your chatty, friendly AI buddy here to guide you through Zoomer Africa. What can I help with today? 🚀</p>
-                        <small id="response-timestamp"></small>
-                        <div id="action-buttons">
-                            <button id="sendBtn" class="copy-btn" onclick="copyResponse(this)" type="Copy">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="icon-copy" viewBox="0 0 16 16">
-                                    <path d="M10 1H2a1 1 0 0 0-1 1v10h1V2a.5.5 0 0 1 .5-.5H10V1z"/>
-                                    <path d="M14 4a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4zm-1 0v10H5V4h8z"/>
-                                  </svg>
-                            </button>
-                          </div>
+                        <p>👋🏾 <strong>Sanibonani!</strong> I'm <strong>AfroZoomer</strong> — your friendly AI companion here to guide you through the amazing world of Zoomer Africa. Whether you need help navigating the platform, understanding features, or just want to chat about African innovation, I'm here for you! 🚀</p>
+                        <small style="color: var(--foreground-muted); font-size: 0.8rem; opacity: 0.8;">Just now</small>
+                        <button class="copy-btn" onclick="copyResponse(this)" title="Copy message">
+                            <i class="fas fa-copy"></i>
+                            Copy
+                        </button>
                     </div>
                 </div>
-                <!-- <div id="action-buttons">
-                    <button onclick="sendFeedback('up')">👍</button>
-                    <button onclick="sendFeedback('down')">👎</button>
-                    <<button onclick="askMore()">Ask more about this topic</button>
-                  </div> -->
-                  
             </div>
             
             <div class="chat-input">
-                <form id="chatForm">
+                <form id="chatForm" onsubmit="sendMessage(event)">
                     <div class="input">
-                        <textarea type="text" id="userInput" placeholder="Ask me anything about Zoomer..." row="1" required></textarea>
-                        <button type="submit" class="send-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                            </svg>
+                        <textarea id="userInput" placeholder="Ask me anything about Zoomer Africa..." rows="1" onkeydown="handleKeyPress(event)" oninput="adjustTextareaHeight(this)"></textarea>
+                        <button type="submit" class="send-button" id="sendBtn">
+                            <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
                 </form>
@@ -197,6 +1091,373 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Enhanced JavaScript with improved animations and interactions
+        
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Enhanced section toggle with smooth animations
+        function toggleSection(sectionElement) {
+            const isActive = sectionElement.classList.contains('active');
+            
+            // Close all other sections
+            document.querySelectorAll('.section.active').forEach(section => {
+                if (section !== sectionElement) {
+                    section.classList.remove('active');
+                }
+            });
+            
+            // Toggle current section
+            if (isActive) {
+                sectionElement.classList.remove('active');
+            } else {
+                sectionElement.classList.add('active');
+                // Smooth scroll to section
+                setTimeout(() => {
+                    sectionElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }, 100);
+            }
+        }
+
+        // Enhanced mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const mobileBtn = document.querySelector('.mobile-menu-btn');
+            
+            navLinks.classList.toggle('active');
+            
+            if (navLinks.classList.contains('active')) {
+                mobileBtn.innerHTML = '✕';
+                mobileBtn.style.transform = 'rotate(180deg)';
+            } else {
+                mobileBtn.innerHTML = '☰';
+                mobileBtn.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Enhanced theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon';
+                themeText.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                themeText.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+                document.getElementById('themeText').textContent = 'Light Mode';
+            }
+        });
+
+        // Enhanced textarea auto-resize
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        // Handle Enter key for sending messages
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+            }
+        }
+
+        // Enhanced copy functionality
+        function copyResponse(btn) {
+            const messageContent = btn.closest('.message-content');
+            const textToCopy = messageContent.querySelector('p').textContent;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                btn.style.background = 'hsl(var(--success))';
+                btn.style.color = 'white';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
+        // Enhanced chat functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatForm = document.getElementById('chatForm');
+            const userInput = document.getElementById('userInput');
+            const chatMessages = document.getElementById('chatMessages');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            // Focus input on load
+            userInput.focus();
+            
+            // Handle form submission
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const userMessage = userInput.value.trim();
+                if (userMessage === '') return;
+                
+                // Disable send button temporarily
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                // Add user message
+                addMessage('user', userMessage);
+                
+                // Show thinking indicator
+                const thinkingId = addThinking();
+                
+                // Clear input
+                userInput.value = '';
+                adjustTextareaHeight(userInput);
+                
+                // Send to Flask backend
+                fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'user_input=' + encodeURIComponent(userMessage)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    removeThinking(thinkingId);
+                    const formattedResponse = formatResponse(data.response);
+                    addMessage('assistant', formattedResponse);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    removeThinking(thinkingId);
+                    addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+                })
+                .finally(() => {
+                    // Re-enable send button
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                    userInput.focus();
+                });
+            });
+
+            function addMessage(sender, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+
+                const avatar = document.createElement('div');
+                avatar.className = `avatar ${sender}-avatar`;
+                avatar.innerHTML = sender === 'user' ? '<span>U</span>' : '<span>A</span>';
+
+                const messageContent = document.createElement('div');
+                messageContent.className = `message-content ${sender}-content`;
+
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                if (sender === 'assistant') {
+                    messageContent.innerHTML = `
+                        ${content}
+                        <small style="color: hsl(var(--foreground-muted)); font-size: 0.8rem; opacity: 0.8; display: block; margin-top: 0.5rem;">${timeString}</small>
+                        <button class="copy-btn" onclick="copyResponse(this)" title="Copy message">
+                            <i class="fas fa-copy"></i>
+                            Copy
+                        </button>
+                    `;
+                    messageDiv.appendChild(avatar);
+                    messageDiv.appendChild(messageContent);
+                } else {
+                    messageContent.innerHTML = `
+                        <p>${content}</p>
+                        <small style="color: rgba(255,255,255,0.8); font-size: 0.8rem; display: block; margin-top: 0.5rem;">${timeString}</small>
+                    `;
+                    messageDiv.appendChild(messageContent);
+                    messageDiv.appendChild(avatar);
+                }
+
+                chatMessages.appendChild(messageDiv);
+                scrollToBottom();
+            }
+
+            function addThinking() {
+                const thinkingId = 'thinking-' + Date.now();
+                const thinkingDiv = document.createElement('div');
+                thinkingDiv.className = 'message assistant-message';
+                thinkingDiv.id = thinkingId;
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar assistant-avatar';
+                avatar.innerHTML = '<span>A</span>';
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content assistant-content';
+                messageContent.innerHTML = `
+                    <div class="thinking">
+                        <span></span>
+                        <div class="dot-typing">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                
+                thinkingDiv.appendChild(avatar);
+                thinkingDiv.appendChild(messageContent);
+                chatMessages.appendChild(thinkingDiv);
+                scrollToBottom();
+                
+                return thinkingId;
+            }
+
+            function removeThinking(thinkingId) {
+                const thinkingDiv = document.getElementById(thinkingId);
+                if (thinkingDiv) {
+                    thinkingDiv.style.animation = 'messageSlideOut 0.3s ease-out forwards';
+                    setTimeout(() => thinkingDiv.remove(), 300);
+                }
+            }
+
+            function scrollToBottom() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function formatResponse(text) {
+                if (!text) return '<p>No response received.</p>';
+
+                // Format bold (**text** or __text__)
+                let formatted = text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+                // Format italics (*text* or _text_)
+                // Avoid replacing inside already bold tags
+                formatted = formatted
+                    .replace(/(\s|^)\*(?!\*)([^\*]+?)\*(\s|$)/g, '$1<em>$2</em>$3')
+                    .replace(/(\s|^)_(?!_)([^_]+?)_(\s|$)/g, '$1<em>$2</em>$3');
+
+                // Format paragraphs: double newlines become new paragraphs
+                formatted = formatted
+                    .replace(/\r\n/g, '\n') // Normalize newlines
+                    .replace(/\n{2,}/g, '</p><p>');
+
+                // Replace single newlines with <br> (inside paragraphs)
+                formatted = formatted.replace(/\n/g, '<br>');
+
+                // Ensure wrapped in <p> tags
+                if (!formatted.startsWith('<p>')) {
+                    formatted = '<p>' + formatted;
+                }
+                if (!formatted.endsWith('</p>')) {
+                    formatted = formatted + '</p>';
+                }
+
+                return formatted;
+            }
+
+            // Service Worker registration
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/static/service-worker.js')
+                    .then(reg => console.log('✅ Service Worker registered'))
+                    .catch(err => console.error('❌ Service Worker failed:', err));
+            }
+
+            // Analytics
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){ dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-VP6344NLKP');
+
+            sendBtn.addEventListener("click", function() {
+                gtag('event', 'click', {
+                    'event_category': 'Button',
+                    'event_label': 'Send Message',
+                    'value': 1
+                });
+            });
+        });
+
+        // Add CSS animation for message slide out
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes messageSlideOut {
+                from { opacity: 1; transform: translateY(0) scale(1); }
+                to { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navLinks = document.getElementById('navLinks');
+            const mobileBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (navLinks.classList.contains('active') && 
+                !navLinks.contains(event.target) && 
+                event.target !== mobileBtn) {
+                toggleMobileMenu();
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add intersection observer for section animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
 </body>
 </html>
