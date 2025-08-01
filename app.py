@@ -19,6 +19,9 @@ client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 
+print("✅ OPENAI_API_KEY is:", os.getenv("OPENAI_API_KEY"))
+
+
 # ===== Load and Embed Zoomer Africa FAQ =====
 doc = Document("zoomer_faqs.docx")
 faq_chunks = [para.text.strip() for para in doc.paragraphs if para.text.strip()][:50]  # Limit to 50 chunks for now
