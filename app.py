@@ -19,7 +19,7 @@ client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 
-print("✅ OPENAI_API_KEY is:", os.getenv("OPENAI_API_KEY"))
+# print("✅ OPENAI_API_KEY is:", os.getenv("OPENAI_API_KEY"))
 
 
 # ===== Load and Embed Zoomer Africa FAQ =====
@@ -206,5 +206,5 @@ def ask():
 
 if __name__ == "__main__":
     # Listen on the right port for Render
-    port = int(os.environ.get('PORT', 8000))
+    port = int(os.environ.get('PORT', 5050))
     app.run(debug=True, host='0.0.0.0', port=port)
